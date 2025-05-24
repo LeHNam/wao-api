@@ -1,0 +1,26 @@
+openapi: 3.0.0
+info:
+  title: User API
+  version: 1.0.0
+  description: API for managing users
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: /api/v1
+
+components:
+  $ref: "./security.yaml#/components"
+
+paths:
+  /product:
+    $ref: "./product/api.yaml#/paths/~1product"
+  /product/{id}:
+    $ref: "./product/api.yaml#/paths/~1product~1{id}"
+  /login:
+    $ref: "./user/api.yaml#/paths/~1login"
+  /logout:
+    $ref: "./user/api.yaml#/paths/~1logout"
+
+tags:
+  - name: product
+  - name: user

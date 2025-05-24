@@ -1,0 +1,19 @@
+FROM golang:1.23-alpine as builder
+ARG CACHEBUST=1
+
+ENV GO111MODULE=on
+ENV APP_ENV development
+ENV GOPRIVATE=github.com/Diqit-Global
+
+RUN apk add bash ca-certificates curl git gcc g++ libc-dev unzip make nodejs npm
+RUN mkdir -p /go/src/github.com/LeHNam/wao-api
+
+WORKDIR /go/src/github.com/LeHNam/wao-api
+ADD . .
+
+RUN npm install -g @redocly/cli@latest
+RUN go install github.com/githubnemo/CompileDaemon@latest
+RUN go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+RUN go install github.com/nicksnyder/go-i18n/v2/goi18n@latest
+
+ENTRYPOINT CompileDaemon -build="go build -o build/app ./main.go" -command="./build/app"

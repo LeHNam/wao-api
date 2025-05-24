@@ -1,0 +1,11 @@
+version: '2'
+services:
+  app:
+    container_name: wao-api
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile-dev
+    volumes:
+      - ./:/go/src/github.com/LeHNam/wao-api
+    ports:
+      - 8080:8080

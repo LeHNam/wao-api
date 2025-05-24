@@ -1,0 +1,11 @@
+# yaml-language-server: ...
+package: user
+output: api/user/server.go
+generate:
+  gin-server: true
+  models: true
+  strict-server: true
+  embedded-spec: true
+output-options:
+  # to make sure that all types are generated
+  skip-prune: true

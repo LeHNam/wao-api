@@ -1,0 +1,307 @@
+openapi: 3.0.3
+info:
+  title: Product API with Options
+  description: CRUD API for products and their options
+  version: 1.0.0
+
+paths:
+  /product:
+    post:
+      summary: Create new product
+      tags:
+        - product
+      security:
+        - bearerAuth: []
+      x-permissions:
+        - product.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List all products
+      tags:
+        - product
+      security:
+        - bearerAuth: []
+      x-permissions:
+        - product.read
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "created_at"
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of products with pagination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPaginateResponseData'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /product/{id}:
+    get:
+      summary: Get product by ID
+      tags:
+        - product
+      security:
+        - bearerAuth: []
+      x-permissions:
+        - product.read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update product by ID (including options)
+      tags:
+        - product
+      security:
+        - bearerAuth: []
+      x-permissions:
+        - product.update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete product by ID
+      tags:
+        - product
+      security:
+        - bearerAuth: []
+      x-permissions:
+        - product.delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Product deleted successfully
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - code
+        - img
+        - options
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        img:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOption'
+
+    ProductOption:
+      type: object
+      required:
+        - id
+        - name
+        - code
+        - quantity
+        - price
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        code:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: float
+
+    ProductCreateRequest:
+      type: object
+      required:
+        - name
+        - code
+        - img
+        - options
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        img:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOptionCreateRequest'
+
+    ProductOptionCreateRequest:
+      type: object
+      required:
+        - name
+        - code
+        - quantity
+        - price
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: float
+
+    ProductUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        img:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOptionCreateRequest'
+
+    ProductResponse:
+      type: object
+      required:
+        - data
+      properties:
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Product'
+
+    ProductPaginateResponseData:
+      type: object
+      required:
+        - total
+        - pages
+        - page
+        - limit
+        - items
+      properties:
+        total:
+          type: integer
+        pages:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+        - error
+      properties:
+        message:
+          type: string
+        error:
+          type: string
