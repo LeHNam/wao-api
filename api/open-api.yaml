@@ -20,7 +20,14 @@ paths:
     $ref: "./user/api.yaml#/paths/~1login"
   /logout:
     $ref: "./user/api.yaml#/paths/~1logout"
+  /purchase-order:
+    $ref: "./purchase_order/api.yaml#/paths/~1purchase-order"
+  /purchase-order/{id}:
+    $ref: "./purchase_order/api.yaml#/paths/~1purchase-order~1{id}"
+  /purchase-order/{id}/status:
+    $ref: "./purchase_order/api.yaml#/paths/~1purchase-order~1{id}~1status"
 
 tags:
   - name: product
   - name: user
+  - name: purchase-order

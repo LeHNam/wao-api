@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/LeHNam/wao-api/helpers/utils"
 	"github.com/LeHNam/wao-api/services/database"
+	"github.com/LeHNam/wao-api/services/websocket"
 	"time"
 
 	svCtx "github.com/LeHNam/wao-api/context"
@@ -13,12 +14,14 @@ import (
 )
 
 type ProductServer struct {
-	sc *svCtx.ServiceContext
+	sc        *svCtx.ServiceContext
+	wsService *websocket.WebSocketService
 }
 
-func NewProductServer(sc *svCtx.ServiceContext) *ProductServer {
+func NewProductServer(sc *svCtx.ServiceContext, wsService *websocket.WebSocketService) *ProductServer {
 	return &ProductServer{
-		sc: sc,
+		sc:        sc,
+		wsService: wsService,
 	}
 }
 
@@ -119,6 +122,12 @@ func (s *ProductServer) PostProduct(ctx context.Context, request PostProductRequ
 			Message: "failed to create product",
 		}, nil
 	}
+	message := map[string]any{
+		"event": "product_created",
+		"data":  productModel,
+	}
+	_ = s.wsService.Broadcast(message)
+
 	return PostProduct201JSONResponse{
 		Message: nil,
 		Data: Product{

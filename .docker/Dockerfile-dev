@@ -3,7 +3,7 @@ ARG CACHEBUST=1
 
 ENV GO111MODULE=on
 ENV APP_ENV development
-ENV GOPRIVATE=github.com/Diqit-Global
+ENV GOPRIVATE=github.com/LeHNam
 
 RUN apk add bash ca-certificates curl git gcc g++ libc-dev unzip make nodejs npm
 RUN mkdir -p /go/src/github.com/LeHNam/wao-api

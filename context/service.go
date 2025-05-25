@@ -16,13 +16,15 @@ type ServiceContext struct {
 	Config *config.Config
 	DB     *gorm.DB
 
-	ctx               context.Context
-	cancel            context.CancelFunc
-	Log               *zap.Logger
-	shutdown          chan struct{}
-	ProductRepo       database.Repository[models.Product]
-	ProductOptionRepo database.Repository[models.ProductOption]
-	UserRepo          database.Repository[models.User]
+	ctx                   context.Context
+	cancel                context.CancelFunc
+	Log                   *zap.Logger
+	shutdown              chan struct{}
+	ProductRepo           database.Repository[models.Product]
+	ProductOptionRepo     database.Repository[models.ProductOption]
+	UserRepo              database.Repository[models.User]
+	PurchaseOrderRepo     database.Repository[models.PurchaseOrder]
+	PurchaseOrderItemRepo database.Repository[models.PurchaseOrderItem]
 }
 
 func NewServiceContext(cfg *config.Config, db *gorm.DB, log *zap.Logger) *ServiceContext {
@@ -31,13 +33,15 @@ func NewServiceContext(cfg *config.Config, db *gorm.DB, log *zap.Logger) *Servic
 		Config: cfg,
 		DB:     db,
 
-		ctx:               ctx,
-		cancel:            cancel,
-		Log:               log,
-		shutdown:          make(chan struct{}),
-		ProductRepo:       models.NewProduct(db),
-		ProductOptionRepo: models.NewProductOption(db),
-		UserRepo:          models.NewUser(db),
+		ctx:                   ctx,
+		cancel:                cancel,
+		Log:                   log,
+		shutdown:              make(chan struct{}),
+		ProductRepo:           models.NewProduct(db),
+		ProductOptionRepo:     models.NewProductOption(db),
+		UserRepo:              models.NewUser(db),
+		PurchaseOrderRepo:     models.NewPurchaseOrder(db),
+		PurchaseOrderItemRepo: models.NewPurchaseOrderItem(db),
 	}
 }
 

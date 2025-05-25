@@ -31,3 +31,6 @@ generate-product-api:
 
 generate-user-api:
 	oapi-codegen --config ./api/user/config.yaml ./api/user/api.yaml
+
+generate-purchase-order-api:
+	oapi-codegen --config ./api/purchase_order/config.yaml ./api/purchase_order/api.yaml

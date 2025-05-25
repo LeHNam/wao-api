@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/LeHNam/wao-api/api/product"
+	purchaseOrder "github.com/LeHNam/wao-api/api/purchase_order"
 	"github.com/LeHNam/wao-api/api/user"
 	"github.com/LeHNam/wao-api/config"
 	"github.com/LeHNam/wao-api/middlewares"
-	"github.com/LeHNam/wao-api/models"
 	"github.com/LeHNam/wao-api/services/i18nService"
+	"github.com/LeHNam/wao-api/services/websocket"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"log"
 	"net/http"
@@ -28,23 +30,24 @@ type Server struct {
 	router     *gin.Engine
 	httpServer *http.Server
 	sc         *svCtx.ServiceContext
+	wsService  *websocket.WebSocketService
 }
 
-func NewServer(sc *svCtx.ServiceContext) *Server {
+func NewServer(sc *svCtx.ServiceContext, wsService *websocket.WebSocketService) *Server {
 	router := gin.Default()
 	router.Use(middlewares.CORSMiddleware())
 
 	return &Server{
-		router: router,
-		sc:     sc,
+		router:    router,
+		sc:        sc,
+		wsService: wsService,
 	}
 }
 
 func (s *Server) AutoMigrate() {
 	err := s.sc.DB.AutoMigrate(
-		&models.Product{},
-		&models.ProductOption{},
-		//&models.User{},
+	//&models.PurchaseOrderItem{},
+	//&models.User{},
 	)
 	if err != nil {
 
@@ -80,7 +83,7 @@ func (s *Server) SetupRoutes() {
 	}
 
 	// register api group with swagger validator
-	authMiddlewareFactory := middlewares.BearerAuthMiddleware(s.sc, false)
+	authMiddlewareFactory := middlewares.BearerAuthMiddleware()
 	apiPrefix := "/api/v1"
 	apiGroupV1 := s.router.Group(
 		apiPrefix,
@@ -93,7 +96,10 @@ func (s *Server) SetupRoutes() {
 			},
 			SilenceServersWarning: true,
 			Options: openapi3filter.Options{
-				AuthenticationFunc: authMiddlewareFactory,
+				AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
+					fmt.Println("Authentication input:", input)
+					return authMiddlewareFactory(c, input)
+				},
 			},
 		}))
 
@@ -103,10 +109,19 @@ func (s *Server) SetupRoutes() {
 		userHandler := user.NewStrictHandler(userServer, nil)
 		user.RegisterHandlersWithOptions(apiGroupV1, userHandler, user.GinServerOptions{})
 
-		productServer := product.NewProductServer(s.sc)
+		productServer := product.NewProductServer(s.sc, s.wsService)
 		productHandler := product.NewStrictHandler(productServer, nil)
 		product.RegisterHandlersWithOptions(apiGroupV1, productHandler, product.GinServerOptions{})
+
+		purchaseOrderServer := purchaseOrder.NewPurchaseOrderServer(s.sc, s.wsService)
+		purchaseOrderHandler := purchaseOrder.NewStrictHandler(purchaseOrderServer, nil)
+		purchaseOrder.RegisterHandlersWithOptions(apiGroupV1, purchaseOrderHandler, purchaseOrder.GinServerOptions{})
 	}
+
+	s.router.GET("/ws", func(c *gin.Context) {
+		s.wsService.HandleWebSocket(c.Writer, c.Request)
+	})
+
 }
 
 func (s *Server) Run() error {

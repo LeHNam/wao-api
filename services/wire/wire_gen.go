@@ -12,6 +12,7 @@ import (
 	"github.com/LeHNam/wao-api/services/database"
 	"github.com/LeHNam/wao-api/services/log"
 	"github.com/LeHNam/wao-api/services/server"
+	"github.com/LeHNam/wao-api/services/websocket"
 )
 
 // Injectors from wire.go:
@@ -27,6 +28,7 @@ func InitializeServer() (*server.Server, error) {
 	}
 	logger := log.NewZapLogger(configConfig)
 	serviceContext := context.NewServiceContext(configConfig, db, logger)
-	serverServer := server.NewServer(serviceContext)
+	webSocketService := websocket.NewWebSocketService()
+	serverServer := server.NewServer(serviceContext, webSocketService)
 	return serverServer, nil
 }
